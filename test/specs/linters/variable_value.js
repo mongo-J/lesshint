@@ -114,5 +114,55 @@ describe('lesshint', function () {
                 expect(result).to.be.undefined;
             });
         });
+
+        it('should handle value if in allowedValues list', function () {
+            const source = 'color: none;';
+            const options = {
+                always: ['color'],
+                allowedValues: ['none']
+            };
+
+            return spec.parse(source, function (ast) {
+                const result = spec.linter.lint(options, ast.root.first);
+
+                expect(result).to.be.undefined;
+            });
+        });
+
+        describe('should handle value if in allowedValues list for multi value field', function () {
+            it('passes if no violation', function () {
+                const source = 'margin: 0 @margin-value;';
+                const options = {
+                    always: ['margin'],
+                    allowedValues: ['0']
+                };
+
+                return spec.parse(source, function (ast) {
+                    const result = spec.linter.lint(options, ast.root.first);
+
+                    expect(result).to.be.undefined;
+                });
+            });
+
+            it('show error for violation', function () {
+                const source = 'margin: 0 5px;';
+                const options = {
+                    always: ['margin'],
+                    allowedValues: ['0']
+                };
+
+                const expected = [{
+                    line: 1,
+                    column: 9,
+                    message: 'Non variable is not allowed in "margin" property.'
+                }];
+
+                return spec.parse(source, function (ast) {
+                    const result = spec.linter.lint(options, ast.root.first);
+
+                    expect(result).to.deep.equal(expected);
+                });
+            });
+        });
     });
 });
